@@ -9,26 +9,63 @@ permissions:
   contents: write
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  release:
+    runs-on: windows-latest
 
     steps:
-
       - uses: actions/checkout@v4
 
-      - name: Install Java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: '21'
+          cache: maven
 
-      - name: Build
-        run: mvn clean package
+      - name: Build JAR
+        run: mvn -B clean package
 
-      - name: Create Release
+      - name: Create Runtime Image
+        run: mvn javafx:jlink
+
+      - name: Install WiX
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix
+          "$env:USERPROFILE\.dotnet\tools" | Out-File -Append $env:GITHUB_PATH
+
+      - name: Create EXE
+        shell: pwsh
+        run: |
+          jpackage `
+            --type exe `
+            --input target `
+            --main-jar local-invoices-1.0.0.jar `
+            --main-class io.github.reinamarlon.localinvoices.LocalInvoicesApp `
+            --name "Local Invoices" `
+            --vendor "ReinaMarlon" `
+            --app-version 1.0.0 `
+            --win-shortcut `
+            --win-menu `
+            --dest installer
+
+      - name: Create MSI
+        shell: pwsh
+        run: |
+          jpackage `
+            --type msi `
+            --input target `
+            --main-jar local-invoices-1.0.0.jar `
+            --main-class io.github.reinamarlon.localinvoices.LocalInvoicesApp `
+            --name "Local Invoices" `
+            --vendor "ReinaMarlon" `
+            --app-version 1.0.0 `
+            --win-shortcut `
+            --win-menu `
+            --dest installer
+
+      - name: Publish Release
         uses: softprops/action-gh-release@v2
-
         with:
           files: |
             target/*.jar
