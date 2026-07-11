@@ -26,25 +26,27 @@ jobs:
         run: mvn -B clean package
 
       - name: Create Runtime Image
-        run: mvn javafx:jlink
+        run: mvn -B -DskipTests javafx:jlink
 
       - name: Install WiX
         shell: pwsh
         run: |
-          dotnet tool install --global wix
-          "$env:USERPROFILE\.dotnet\tools" | Out-File -Append $env:GITHUB_PATH
+          choco install wixtoolset -y
+          "C:\Program Files (x86)\WiX Toolset v3.14\bin" | Out-File -Append $env:GITHUB_PATH
 
       - name: Create EXE
         shell: pwsh
         run: |
           jpackage `
             --type exe `
-            --input target `
-            --main-jar local-invoices-1.0.0.jar `
-            --main-class io.github.reinamarlon.localinvoices.LocalInvoicesApp `
             --name "Local Invoices" `
             --vendor "ReinaMarlon" `
             --app-version 1.0.0 `
+            --description "Native desktop app for local invoice and receipt management" `
+            --runtime-image "target/LocalInvoices" `
+            --module "io.github.reinamarlon.localinvoices/io.github.reinamarlon.localinvoices.LocalInvoicesApp" `
+            --icon "src/main/resources/io/github/reinamarlon/localinvoices/images/icon.ico" `
+            --java-options "--enable-native-access=javafx.graphics,org.xerial.sqlitejdbc" `
             --win-shortcut `
             --win-menu `
             --dest installer
@@ -54,12 +56,14 @@ jobs:
         run: |
           jpackage `
             --type msi `
-            --input target `
-            --main-jar local-invoices-1.0.0.jar `
-            --main-class io.github.reinamarlon.localinvoices.LocalInvoicesApp `
             --name "Local Invoices" `
             --vendor "ReinaMarlon" `
             --app-version 1.0.0 `
+            --description "Native desktop app for local invoice and receipt management" `
+            --runtime-image "target/LocalInvoices" `
+            --module "io.github.reinamarlon.localinvoices/io.github.reinamarlon.localinvoices.LocalInvoicesApp" `
+            --icon "src/main/resources/io/github/reinamarlon/localinvoices/images/icon.ico" `
+            --java-options "--enable-native-access=javafx.graphics,org.xerial.sqlitejdbc" `
             --win-shortcut `
             --win-menu `
             --dest installer

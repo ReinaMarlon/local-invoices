@@ -14,10 +14,11 @@ jpackage `
   --type msi `
   --name "Local Invoices" `
   --app-version "1.0.0" `
-  --vendor "io.github.reinamarlon" `
+  --vendor "ReinaMarlon" `
   --description "Native desktop app for local invoice and receipt management" `
   --runtime-image "$imagePath" `
   --module "io.github.reinamarlon.localinvoices/io.github.reinamarlon.localinvoices.LocalInvoicesApp" `
+  --icon "src/main/resources/io/github/reinamarlon/localinvoices/images/icon.ico" `
   @runtimeOptions `
   --dest "target/installer" `
   --win-menu `
