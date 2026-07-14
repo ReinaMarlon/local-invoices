@@ -34,6 +34,39 @@ jobs:
           choco install wixtoolset -y
           "C:\Program Files (x86)\WiX Toolset v3.14\bin" | Out-File -Append $env:GITHUB_PATH
 
+      - name: Create App Image
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force installer | Out-Null
+          jpackage `
+            --type app-image `
+            --name "Local Invoices" `
+            --vendor "ReinaMarlon" `
+            --app-version 1.0.0 `
+            --description "Native desktop app for local invoice and receipt management" `
+            --runtime-image "target/LocalInvoices" `
+            --module "io.github.reinamarlon.localinvoices/io.github.reinamarlon.localinvoices.LocalInvoicesApp" `
+            --icon "src/main/resources/io/github/reinamarlon/localinvoices/images/icon.ico" `
+            --java-options "--enable-native-access=javafx.graphics,org.xerial.sqlitejdbc" `
+            --dest installer
+
+      - name: Smoke Test App Image
+        shell: pwsh
+        run: |
+          $exe = "installer/Local Invoices/Local Invoices.exe"
+          if (!(Test-Path $exe)) {
+            throw "Packaged launcher was not created at $exe"
+          }
+
+          $process = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 8
+          if ($process.HasExited) {
+            throw "Packaged launcher exited immediately with code $($process.ExitCode)"
+          }
+
+          Stop-Process -Id $process.Id -Force
+          Get-Content "installer/Local Invoices/app/Local Invoices.cfg"
+
       - name: Create EXE
         shell: pwsh
         run: |
@@ -43,10 +76,7 @@ jobs:
             --vendor "ReinaMarlon" `
             --app-version 1.0.0 `
             --description "Native desktop app for local invoice and receipt management" `
-            --runtime-image "target/LocalInvoices" `
-            --module "io.github.reinamarlon.localinvoices/io.github.reinamarlon.localinvoices.LocalInvoicesApp" `
-            --icon "src/main/resources/io/github/reinamarlon/localinvoices/images/icon.ico" `
-            --java-options "--enable-native-access=javafx.graphics,org.xerial.sqlitejdbc" `
+            --app-image "installer/Local Invoices" `
             --win-shortcut `
             --win-menu `
             --dest installer
@@ -60,10 +90,7 @@ jobs:
             --vendor "ReinaMarlon" `
             --app-version 1.0.0 `
             --description "Native desktop app for local invoice and receipt management" `
-            --runtime-image "target/LocalInvoices" `
-            --module "io.github.reinamarlon.localinvoices/io.github.reinamarlon.localinvoices.LocalInvoicesApp" `
-            --icon "src/main/resources/io/github/reinamarlon/localinvoices/images/icon.ico" `
-            --java-options "--enable-native-access=javafx.graphics,org.xerial.sqlitejdbc" `
+            --app-image "installer/Local Invoices" `
             --win-shortcut `
             --win-menu `
             --dest installer
