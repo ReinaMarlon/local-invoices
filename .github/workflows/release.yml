@@ -22,6 +22,13 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Resolve Release Version
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          "APP_VERSION=$version" | Out-File -Append $env:GITHUB_ENV
+          "Release version: $version"
+
       - name: Build JAR
         run: mvn -B clean package
 
@@ -42,12 +49,13 @@ jobs:
             --type app-image `
             --name "Local Invoices" `
             --vendor "ReinaMarlon" `
-            --app-version 1.0.0 `
+            --app-version "$env:APP_VERSION" `
             --description "Native desktop app for local invoice and receipt management" `
             --runtime-image "target/LocalInvoices" `
             --module "io.github.reinamarlon.localinvoices/io.github.reinamarlon.localinvoices.LocalInvoicesApp" `
             --icon "src/main/resources/io/github/reinamarlon/localinvoices/images/icon.ico" `
             --java-options "--enable-native-access=javafx.graphics,org.xerial.sqlitejdbc" `
+            --java-options "-Dlocalinvoices.version=$env:APP_VERSION" `
             --dest installer
 
       - name: Smoke Test App Image
@@ -74,7 +82,7 @@ jobs:
             --type exe `
             --name "Local Invoices" `
             --vendor "ReinaMarlon" `
-            --app-version 1.0.0 `
+            --app-version "$env:APP_VERSION" `
             --description "Native desktop app for local invoice and receipt management" `
             --app-image "installer/Local Invoices" `
             --win-shortcut `
@@ -88,7 +96,7 @@ jobs:
             --type msi `
             --name "Local Invoices" `
             --vendor "ReinaMarlon" `
-            --app-version 1.0.0 `
+            --app-version "$env:APP_VERSION" `
             --description "Native desktop app for local invoice and receipt management" `
             --app-image "installer/Local Invoices" `
             --win-shortcut `

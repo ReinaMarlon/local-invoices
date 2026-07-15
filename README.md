@@ -1,6 +1,61 @@
 # Local Invoices
 
-Native desktop app for local receipt and invoice management.
+Local Invoices es una app de escritorio hecha en JavaFX para crear y guardar recibos locales.
+
+La idea de la app es simple: registrar una o varias empresas, crear recibos con datos del cliente, productos o servicios, valores, medio de pago y luego guardar ese historial en el mismo equipo.
+
+Ultimo release:
+
+https://github.com/ReinaMarlon/local-invoices/releases/latest
+
+## Que Hace
+
+- Permite registrar empresas con nombre comercial, razon social, NIT o identificacion, ciudad, pais, telefono y logo.
+- Maneja consecutivos de recibos por cada empresa.
+- Crea recibos con datos del cliente, medio de pago, observaciones y varios items.
+- Calcula automaticamente el total del recibo.
+- Guarda la informacion en una base de datos SQLite local.
+- Permite consultar recibos guardados desde el historial.
+- Copia una imagen del recibo al portapapeles despues de guardarlo.
+- Guarda los datos en la carpeta de usuario del sistema operativo.
+
+## Alcance
+
+Esta app sirve para manejar recibos locales o comprobantes internos de pago.
+
+No es un sistema de facturacion electronica. En este momento no se conecta con la DIAN, no genera CUFE, no firma documentos digitalmente y no envia facturas para validacion oficial.
+
+Si en algun momento se quiere convertir en una app de facturacion electronica real, se necesita agregar una integracion aparte con un proveedor o servicio compatible con los requisitos de la DIAN.
+
+## Requisitos Para Usar La App
+
+### Minimos
+
+- Windows 10 de 64 bits.
+- 4 GB de RAM.
+- 200 MB libres en disco.
+- Pantalla de 900 x 620 o superior.
+- Permisos para instalar y escribir en la carpeta de usuario.
+
+### Recomendados
+
+- Windows 11 de 64 bits.
+- 8 GB de RAM.
+- 500 MB libres en disco.
+- Pantalla HD o superior.
+- Usar la version instalada desde el ultimo release.
+
+La app empaquetada ya incluye su propio runtime de Java, asi que el usuario final no necesita instalar Java manualmente.
+
+## Donde Guarda Los Datos
+
+La base de datos se guarda localmente en el equipo del usuario:
+
+- Windows: `%APPDATA%\Local Invoices\local-invoices.db`
+- macOS: `~/Library/Application Support/Local Invoices/local-invoices.db`
+- Linux: `~/.local/share/local-invoices/local-invoices.db`
+
+Los logos de las empresas se guardan en una carpeta `logos` dentro de esa misma ruta.
 
 ## Stack
 
@@ -8,88 +63,43 @@ Native desktop app for local receipt and invoice management.
 - JavaFX 21
 - Maven
 - SQLite
-- `jpackage` for native installers
+- jpackage para crear instaladores nativos
 
-## Package Structure
+## Como Correr En Desarrollo
 
-The Java package is `io.github.reinamarlon.localinvoices`.
-
-That package name is a good fit for a GitHub-hosted personal/open-source project because it follows the reverse-domain convention for `github.io/reinamarlon`.
-
-The app is organized by responsibilities:
-
-- `domain.model`: immutable business records such as `Company`, `Bill`, and draft objects.
-- `domain.service`: application use cases and validation. This keeps JavaFX from talking directly to repositories.
-- `infrastructure.persistence`: SQLite schema and repositories.
-- `io.github.reinamarlon.localinvoices`: JavaFX desktop entry point and UI composition.
-
-## Run Locally
+Para correr la app localmente:
 
 ```bash
 mvn javafx:run
 ```
 
-On Windows you can also run:
-
-```powershell
-.\scripts\run.ps1
-```
-
-## Build Runtime Image
+Para generar la imagen runtime:
 
 ```bash
 mvn -DskipTests javafx:jlink
 ```
 
-The runtime image is generated at:
+La imagen se genera en:
 
 ```text
 target/LocalInvoices
 ```
 
-## Create Installer
+## Como Se Publican Versiones
 
-Windows:
-
-```powershell
-.\scripts\package-installer.ps1
-```
-
-macOS/Linux:
-
-```bash
-./scripts/package-installer.sh
-```
-
-Installers are generated in:
+Los instaladores se generan desde GitHub Actions cuando se sube un tag con formato:
 
 ```text
-target/installer
+v1.0.3
 ```
 
-## Local Data
+El workflow toma esa version y la usa para el `.exe`, el `.msi` y la version que se muestra dentro de la app.
 
-The SQLite database is stored in the current user's application data folder:
+## Estructura General
 
-- Windows: `%APPDATA%\Local Invoices\local-invoices.db`
-- macOS: `~/Library/Application Support/Local Invoices/local-invoices.db`
-- Linux: `~/.local/share/local-invoices/local-invoices.db`
+- `domain.model`: modelos principales como empresas, recibos e items.
+- `domain.service`: logica de uso de la app.
+- `infrastructure.persistence`: conexion SQLite y repositorios.
+- `io.github.reinamarlon.localinvoices`: entrada principal de JavaFX y pantallas.
 
-Company logos are copied into the same application data folder under `logos/`.
-
-## Current Feature Set
-
-- Manual company registration with commercial name, legal name, tax ID, city, country, phone, and logo/photo
-- No preloaded companies; the user creates all companies manually
-- Company selector backed by SQLite data
-- Consecutive receipt numbers per company
-- Detailed local receipt form: customer identification, email, address, payment method, multiple line items, quantities, unit prices, and automatic totals
-- SQLite persistence
-- Receipt snapshot copied to clipboard after saving
-- History view filtered by ID, name, or phone
-- Single JavaFX scene so window size/maximized state is preserved while navigating
-- Native packaging path for Windows, Linux, and macOS
-
-## Compliance Scope
-
-Local Invoices currently produces local receipts and internal payment records. It is not an electronic invoice provider: it does not request DIAN numbering authorization, apply a digital signature, transmit documents for validation, or issue a CUFE. Those capabilities require a separate DIAN-compliant electronic invoicing integration.
+La estructura busca mantener la app ordenada sin complicarla demasiado. La UI esta en JavaFX y la persistencia se maneja con SQLite local.

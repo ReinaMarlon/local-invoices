@@ -854,6 +854,8 @@ public final class LocalInvoicesApp extends Application {
     }
 
     private String applicationVersion() {
+        String releaseVersion = System.getProperty("localinvoices.version");
+        if (releaseVersion != null && !releaseVersion.isBlank()) return releaseVersion;
         String packagedVersion = LocalInvoicesApp.class.getPackage().getImplementationVersion();
         return packagedVersion == null || packagedVersion.isBlank() ? APP_VERSION : packagedVersion;
     }
